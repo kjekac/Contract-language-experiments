@@ -1,0 +1,14 @@
+constant C = 0xdeadbeef
+
+stream target to C ;
+stream input from "msg" ;
+
+box forward
+  in (tx :: Tx)
+  out (tx :: Tx)
+  match
+    (tx) -> if p tx then (tx) else (*)
+
+wire forward
+  (input)
+  (target)
