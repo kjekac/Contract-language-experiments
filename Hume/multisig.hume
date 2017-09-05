@@ -1,0 +1,32 @@
+constant Owners = [ 0xdeadbeef, 0x12345678, 0x01337420 ]
+
+constant N = 2
+
+box txReceiver
+  in (tx :: Tx, accept :: Bool)
+  out (tx :: Tx)
+  match
+    (tx, True)  -> (tx)
+    (tx, False) -> (*)
+
+
+box handler
+  in (accept :: Bool, sender :: Address, accepts :: Int)
+  out (accept' :: Bool, accepts' :: Int)
+  match
+    (*, *, N)       -> (True, *)
+    (True, addr, n) -> if addr `in` Owners
+                        then (*, n+1)
+                        else (*, n)
+    (_, _, n)       -> (*, n)
+
+
+stream input from "msg" ;
+
+wire txReceiver
+  (input, handler.accept')
+  (???)
+
+wire handler
+  (input.arg[0], input.sender, handler.accepts' initially 0)
+  (txReceiver.accept, handler.accepts)
