@@ -1,0 +1,37 @@
+exception EInsufficientFunds :: (Int)
+
+data Action = Deposit | Withdraw | Balance
+
+type BalanceMap = Map Address Int
+
+box depositer
+  in (account :: Address, amount :: Int, balances :: BalanceMap)
+  out (balances' :: BalanceMap)
+  match
+    (a, n, bals) -> (insertWith a (+n) 0 bals)
+
+box balanceQuerier
+  in (account :: Address, balances :: BalanceMap)
+  out (balance :: Int, balances' BalanceMap)
+  match
+    (a, bals) -> (fromJust 0 $ lookup a bals, bals)
+
+-- TODO: box withdrawer
+
+
+-- This feels ugly..?
+box bank
+  in (iBalances :: BalanceMap)
+  out (oBalances :: BalanceMap)
+  match
+    (bals) -> (bals)
+
+
+wire depositer
+  (sender, value, bank.oBalances initially empty)
+  (bank.iBalances)
+
+-- TODO: Anyone should be able to query the balance for anyone.
+wire balanceQuerier
+  (sender, bank.oBalances initially empty)
+  (return, bank.iBalances)
